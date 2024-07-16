@@ -1,8 +1,6 @@
 import React from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import classNames from 'classnames';
-import {Shader} from './Shader';
-import {defaultPreset, Preset} from './Presets';
 
 interface Props {
   delay: number;
@@ -15,9 +13,8 @@ interface State {
 }
 
 export class Stage extends React.PureComponent<Props, State> {
-  state: State = {imgW: defaultPreset.width, imgH: defaultPreset.height, canvasScale: 'h', pixelated: true};
+  state: State = {imgW: 256, imgH: 256, canvasScale: 'h', pixelated: true};
   resizeObserver: any;
-  shader: Shader;
 
   timeout: any;
 
@@ -32,19 +29,20 @@ export class Stage extends React.PureComponent<Props, State> {
 
     let {delay} = this.props;
     if (delay != Infinity) {
-      this.timeout = setTimeout(this.updateShader, delay);
+      this.timeout = setTimeout(this.update, delay);
     }
   };
 
-  updateShader = () => {
-    if (this.shader) {
-      this.shader.update();
-      let {delay} = this.props;
-      if (delay === 0) {
-        for (let i = 0; i < 16; ++i) {
-          this.shader?.update();
-        }
+  update =  () => {
+    if (this._canvasNode) {
+      const context = this._canvasNode.getContext('2d');
+      const Module = (window as any).Module as any;
+      if (!Module) {
+        return;
       }
+      const uarr = new Uint8ClampedArray(Module.HEAP8.buffer, Module._run(), 256*256*4);
+      const imageData = new ImageData(uarr, 256,256);
+      context.putImageData(imageData, 0, 0);
     }
     this.startTimer();
   };
@@ -79,26 +77,12 @@ export class Stage extends React.PureComponent<Props, State> {
   forceResize() {
     this.checkResize(this._rootNode.offsetWidth, this._rootNode.offsetHeight);
   }
-  step() {
-    this.shader?.update();
-  }
-  save() {
-    this.shader?.saveImage();
-  }
-  reload(preset: Preset) {
-    this.setState({imgW: preset.width, imgH: preset.height}, () => {
-      this.forceResize();
-    });
-    this.shader?.init(preset.width, preset.height, preset.generator());
-  }
+
   mounted = false;
   componentDidMount() {
-    let {imgW, imgH, canvasScale, pixelated} = this.state;
     this.resizeObserver = new ResizeObserver(this.handleResize);
     this.resizeObserver.observe(this._rootNode);
     this.mounted = true;
-    this.shader = new Shader(this._canvasNode);
-    this.shader.init(imgW, imgH, defaultPreset.generator());
     this.startTimer();
   }
 

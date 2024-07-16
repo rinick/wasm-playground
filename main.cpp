@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "force.h"
+#include "output-image.h"
 #include "tile.h"
 
 extern "C" {
@@ -12,8 +13,9 @@ extern "C" {
         tiles[0][0].food ++;
     }
 
-    void run() {
+    void * run() {
         iterateFood();
+        return updateBitmap();
     }
 }
 
