@@ -10,7 +10,8 @@ void * updateBitmap() {
         auto* trow = tiles[y];
         auto* brow = bitmap[y];
         for (size_t x = 1; x < 255; ++x) {
-            float m = trow[x].food - trow[x].foodC* 0.5f;
+            float m = trow[x].food; // - trow[x].foodC* 0.5f;
+            brow[x][2] = 0;
             brow[x][3] = 255;
             if (m > 255.0) {
                 brow[x][0] = 255;
@@ -21,5 +22,6 @@ void * updateBitmap() {
             }
         }
     }
+    bitmap[ky][kx][2] = 255;
     return &bitmap;
 }

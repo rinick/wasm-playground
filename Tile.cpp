@@ -15,10 +15,13 @@ void initTiles() {
         for (size_t x = 1; x < 255; ++x) {
             row[x].force = 1;
             row[x].foodC = 5;
+            row[x].food = 128.0f;
         }
     }
 }
 
+size_t kx = 6;
+size_t ky = 106;
 
 void iterateFood() {
 
@@ -27,9 +30,9 @@ void iterateFood() {
             auto* row = tiles[y];
             for (size_t x = 1; x < 255; ++x) {
                 //if (x & y & 1) {
-                    row[x].foodC = static_cast <float> (rand()) *0.3f / static_cast <float> (RAND_MAX);
+                    row[x].foodC = static_cast <float> (rand()) *0.2f / static_cast <float> (RAND_MAX);
                // } else {
-                    row[x].foodC = 0.1f;
+                    row[x].foodC = 0.05f;
                 //}
             }
         }
@@ -64,8 +67,8 @@ void iterateFood() {
             }
             // apply the transfer
             if (diffSum) {
-                t->foodC -= t->food;
-                diffSum = (t->food) / diffSum; // pre divide;
+                t->foodC -= t->food * 0.75;
+                diffSum = (t->food * 0.75) / diffSum; // pre divide;
                 for (size_t i = 0; i < 8; ++i) {
                     if (diff[i]) {
                         Tile * n = t + neighbors[i];
@@ -91,7 +94,15 @@ void iterateFood() {
         }
     }
 
-    tiles[6][6].food = 0;
+    tiles[ky][kx].food = 0;
+
+    ky = ky + (rand() & 1) - (rand() & 1);
+    kx = kx + (rand() & 1) - (rand() & 1);
+
+    if (ky < 5) ky = 5;
+    if (ky > 200) ky = 200;
+    if (kx < 5) kx = 5;
+    if (kx > 200) kx = 200;
 
     tiles[153][153].food = 0;
     tiles[153][154].food = 0;
